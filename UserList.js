@@ -7,6 +7,7 @@ import {
   Divider,
   Appbar
 } from 'react-native-paper';
+import Animated, { Easing, FadeInLeft } from "react-native-reanimated";
 
 const testData = [
   {
@@ -120,27 +121,31 @@ export default function UserList({ navigation }) {
           <Appbar.Content title="Friends List" />
         </Appbar.Header>
         <ScrollView contentContainerStyle={styles.cardScrollview} >
-          {testData.map((user) => (
-            <Card key={user.email} style={styles.card}   onPress={() => navigation.navigate("Profile", {user})}>
-              <Card.Title
-                title={user.name}
-                subtitle={user.email}
-                left={(props) => (
-                  <Avatar.Image size={50} source={{ uri: user.photo_url }} />
-                )}
-                right={(props) => (
-                  <IconButton
-                    {...props}
-                    icon="dots-vertical"
-                    onPress={() => {}}
+          {testData.map((user, index) => (
+            <View key={user.email}>
+              <Animated.View entering={FadeInLeft.delay(index * 200).easing(Easing.ease)}>
+                <Card  style={styles.card}   onPress={() => navigation.navigate("Profile", {user})}>
+                  <Card.Title
+                    title={user.name}
+                    subtitle={user.email}
+                    left={(props) => (
+                      <Avatar.Image size={50} source={{ uri: user.photo_url }} />
+                    )}
+                    right={(props) => (
+                      <IconButton
+                        {...props}
+                        icon="dots-vertical"
+                        onPress={() => {}}
+                      />
+                    )}
                   />
-                )}
-              />
-              <Card.Actions>
-                <Button>Send Message</Button>
-              </Card.Actions>
-              <Divider />
-            </Card>
+                  <Card.Actions>
+                    <Button>Send Message</Button>
+                  </Card.Actions>
+                  <Divider />
+                </Card>
+              </Animated.View>
+            </View>
           ))}
         </ScrollView>
       </View>
