@@ -1,136 +1,61 @@
-import React, { useState } from "react";
-import { StyleSheet, View, Button, PermissionsAndroid, Text, Platform } from "react-native";
-import { launchImageLibrary, launchCamera } from "react-native-image-picker";
-import RNFS from "react-native-fs"; 
+import React, { useState } from 'react';
+import { Button, Text, View, StyleSheet } from 'react-native';
+import * as Location from 'expo-location';
+import * as FileSystem from 'expo-file-system';
 
-function App() {
-  const [uri, setUri] = useState("");
+export default function App() {
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+  const [error, setError] = useState(null);
 
-  const saveFile = async (photoUri) => {
+  const getLocation = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      setError('Permission to access location was denied');
+      return;
+    }
+
+    let location = await Location.getCurrentPositionAsync({});
+    setLatitude(location.coords.latitude);
+    setLongitude(location.coords.longitude);
+
+    setError('');
+  };
+
+  const saveLocationToFile = async () => {
+
+    if (!latitude || !longitude) {
+      setError("Location data required");
+      return
+    }
+    
+    const fileUri = FileSystem.documentDirectory + 'location_data.txt';
+    const locationData = `Latitude: ${latitude}, Longitude: ${longitude}\n`;
+
     try {
-      const fileName = "test_photo.jpg"; 
-      const path = RNFS.PicturesDirectoryPath + "/" + fileName;
+      await FileSystem.writeAsStringAsync(fileUri, locationData, { encoding: FileSystem.EncodingType.UTF8 });
 
-      await RNFS.copyFile(photoUri, path);
-      console.log("Success: Photo saved to Pictures folder.");
-    } catch (err) {
-      console.error("Error saving photo:", err);
-    }
-  };
+      setError('');
+    } catch (error) {
 
-  const openImagePicker = async () => {
-    const granted = await requestGalleryPermission();
-    if (granted) {
-      launchImageLibrary(
-        {
-          mediaType: "photo",
-          includeBase64: false,
-          maxHeight: 2000,
-          maxWidth: 2000,
-        },
-        handleResponse
-      );
+      console.log("Error saving location data to file:", error);
+      setError("Error saving location data to file");
     }
-  };
 
-  const handleCameraLaunch = async () => {
-    const granted = await requestCameraPermission();
-    if (granted) {
-      launchCamera(
-        {
-          mediaType: "photo",
-          includeBase64: false,
-          maxHeight: 2000,
-          maxWidth: 2000,
-        },
-        handleResponse
-      );
-    }
-  };
-
-  const requestCameraPermission = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-        {
-          title: "Camera Permission",
-          message: "This app needs access to your camera to take photos.",
-          buttonNeutral: "Ask Me Later",
-          buttonNegative: "Cancel",
-          buttonPositive: "OK",
-        }
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log("Camera permission granted");
-        return true;
-      } else {
-        console.log("Camera permission denied");
-        return false;
-      }
-    } catch (err) {
-      console.warn(err);
-      return false;
-    }
-  };
-
-  const requestGalleryPermission = async () => {
-    try {
-      if (Platform.OS === "android" && Platform.Version >= 29) {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-          {
-            title: "Gallery Permission",
-            message: "This app needs access to your gallery to select photos.",
-            buttonNeutral: "Ask Me Later",
-            buttonNegative: "Cancel",
-            buttonPositive: "OK",
-          }
-        );
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          console.log("Gallery permission granted");
-          return true;
-        } else {
-          console.log("Gallery permission denied");
-          return false;
-        }
-      } else {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          {
-            title: "Storage Permission",
-            message: "This app needs access to your storage to select photos.",
-            buttonNeutral: "Ask Me Later",
-            buttonNegative: "Cancel",
-            buttonPositive: "OK",
-          }
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      }
-    } catch (err) {
-      console.warn(err);
-      return false;
-    }
-  };
-
-  const handleResponse = (response) => {
-    if (response.didCancel) {
-      console.log("User cancelled image picker");
-    } else if (response.error) {
-      console.log("Image picker error: ", response.error);
-    } else if (response.assets && response.assets.length > 0) {
-      const imageUri = response.assets[0].uri;
-      setUri(imageUri);
-      saveFile(imageUri); 
-    } else {
-      console.log("No assets found in the response");
-    }
   };
 
   return (
     <View style={styles.container}>
-      <Button title="Open Image Picker" onPress={openImagePicker} />
-      <Button title="Launch Camera" onPress={handleCameraLaunch} />
-      {uri ? <Text>Selected Image URI: {uri}</Text> : <Text>No image selected</Text>}
+      <Text style={styles.name}>Andi Usman Balo - 00000037809</Text>
+      <Button style={styles.getGeoLocationBtn} title="GET GEO LOCATION" onPress={getLocation} />
+      <Button title="Save Location to File" onPress={saveLocationToFile} />
+      {latitude && longitude && (
+        <View style={styles.coordinates}>
+          <Text>Latitude: {latitude}</Text>
+          <Text>Longitude: {longitude}</Text>
+        </View>
+      )}
+      {error && <Text style={styles.error}>{error}</Text>}
     </View>
   );
 }
@@ -138,10 +63,22 @@ function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
+  name: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  coordinates: {
+    marginTop: 20,
+  },
+  error: {
+    color: 'red',
+    marginTop: 20,
+  },
+  getGeoLocationBtn :{
+    marginBottom: 10
+  }
 });
-
-export default App;

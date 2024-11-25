@@ -1465,6 +1465,11 @@
   resolved "https://registry.yarnpkg.com/@react-native/normalize-colors/-/normalize-colors-0.76.2.tgz#015fa1d454ec605153c8af05666185026e682e66"
   integrity sha512-ICoOpaTLPsFQjNLSM00NgQr6wal300cZZonHVSDXKntX+BfkLeuCHRtr/Mn+klTtW+/1v2/2FRm9dXjvyGf9Dw==
 
+"@react-native/normalize-colors@0.76.3":
+  version "0.76.3"
+  resolved "https://registry.yarnpkg.com/@react-native/normalize-colors/-/normalize-colors-0.76.3.tgz#8d4de4a8671385c53b2d202ef0137632abcf747d"
+  integrity sha512-Yrpmrh4IDEupUUM/dqVxhAN8QW1VEUR3Qrk2lzJC1jB2s46hDe0hrMP2vs12YJqlzshteOthjwXQlY0TgIzgbg==
+
 "@react-native/normalize-colors@^0.74.1":
   version "0.74.88"
   resolved "https://registry.yarnpkg.com/@react-native/normalize-colors/-/normalize-colors-0.74.88.tgz#46f4c7270c8e6853281d7dd966e0eb362068e41a"
@@ -2645,6 +2650,11 @@ expo-keep-awake@~14.0.1:
   resolved "https://registry.yarnpkg.com/expo-keep-awake/-/expo-keep-awake-14.0.1.tgz#77c38feefa95c494aa167e6df5a6eacd17af2358"
   integrity sha512-c5mGCAIk2YM+Vsdy90BlEJ4ZX+KG5Au9EkJUIxXWlpnuKmDAJ3N+5nEZ7EUO1ZTheqoSBeAo4jJ8rTWPU+JXdw==
 
+expo-location@~18.0.2:
+  version "18.0.2"
+  resolved "https://registry.yarnpkg.com/expo-location/-/expo-location-18.0.2.tgz#133e2d5d852207375708b28cbaf008cca8366756"
+  integrity sha512-45wPrQCv5UQM/RZcOJIei8za0lSyEm5wlb3izLa9P45bqlu3ChRZhYfZz+gMQhVb/oorVqzIVUQhKRTTz7GOXQ==
+
 expo-media-library@~17.0.2:
   version "17.0.2"
   resolved "https://registry.yarnpkg.com/expo-media-library/-/expo-media-library-17.0.2.tgz#8394ebe86b2736a8b3586c42b48dedee9393dc9d"
@@ -2671,17 +2681,22 @@ expo-modules-core@2.0.3:
   dependencies:
     invariant "^2.2.4"
 
+expo-sharing@~13.0.0:
+  version "13.0.0"
+  resolved "https://registry.yarnpkg.com/expo-sharing/-/expo-sharing-13.0.0.tgz#fbc46f4afdaa265a2811fe88c2a589aae2d2de0f"
+  integrity sha512-b23ymicRmYn/Pjj05sl9tFZHN5cH9I1f0yiqY1Yk8Q3oCx0Aznri82DnTYA4T/J6D9vrkraX0wQ4jWVMOffmlg==
+
 expo-status-bar@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/expo-status-bar/-/expo-status-bar-2.0.0.tgz#dd99adc2ace12a24c92718cd0f97b93347103393"
   integrity sha512-vxxdpvpNDMTEc5uTiIrbTvySKKUsOACmfl8OZuUdjNle05oGqwtq3v5YObwym/njSByjoyuZX8UpXBZnxvarwQ==
 
-expo-system-ui@~4.0.3:
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/expo-system-ui/-/expo-system-ui-4.0.3.tgz#bfad40699f8b91b5c9bdcd3fad3caa3f07723c97"
-  integrity sha512-33Wbc6vGq1WL+eGPnMuKNygXWKMBbpiTpBpNY84elgBcoBUIHvR0xnhpg0HRRtg2piwmhZd7qq1vclpryzZCgA==
+expo-system-ui@~4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/expo-system-ui/-/expo-system-ui-4.0.4.tgz#b04b6e38310882f4ac4d4aafbdd0e487a559a707"
+  integrity sha512-HShVNcHhdxl2zwlophX2ghjDr40Kexxa2hdeDhZliBoQkOkVrmp28agY+2W8pibAmQDIjjGAEYai07C0U8xQ8w==
   dependencies:
-    "@react-native/normalize-colors" "0.76.2"
+    "@react-native/normalize-colors" "0.76.3"
     debug "^4.3.2"
 
 expo@52:
@@ -4565,6 +4580,11 @@ react-native-fs@^2.20.0:
   dependencies:
     base-64 "^0.1.0"
     utf8 "^3.0.0"
+
+react-native-geolocation-service@^5.3.1:
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/react-native-geolocation-service/-/react-native-geolocation-service-5.3.1.tgz#4ce1017789da6fdfcf7576eb6f59435622af4289"
+  integrity sha512-LTXPtPNmrdhx+yeWG47sAaCgQc3nG1z+HLLHlhK/5YfOgfLcAb9HAkhREPjQKPZOUx8pKZMIpdGFUGfJYtimXQ==
 
 react-native-image-picker@^7.1.2:
   version "7.1.2"
