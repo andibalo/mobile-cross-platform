@@ -1,25 +1,111 @@
 import React, { useState } from 'react';
-import { Button, Text, View, StyleSheet } from 'react-native';
+import { Button, Text, View, StyleSheet, Image } from 'react-native';
 import * as Location from 'expo-location';
 import * as FileSystem from 'expo-file-system';
+import { addDoc, collection } from 'firebase/firestore';
+import { firestoreDB, storage } from './firebaseCfg';
+import * as ImagePicker from 'expo-image-picker';
+import { useCameraPermissions } from 'expo-camera';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 export default function App() {
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [error, setError] = useState(null);
+  const [image, setImage] = useState(null);
+  const [permission, requestPermission] = useCameraPermissions();
 
-  const getLocation = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      setError('Permission to access location was denied');
-      return;
+  if (!permission) {
+    // Camera permissions are still loading.
+    return <View />;
+  }
+
+  if (!permission.granted) {
+    // Camera permissions are not granted yet.
+    return (
+      <View style={styles.container}>
+        <Text>We need your permission to show the camera</Text>
+        <Button onPress={requestPermission} title="grant permission" />
+      </View>
+    );
+  }
+
+  const addData = async () => {
+    if (!image ) {
+      setError("Image is required");
+      return
     }
 
-    let location = await Location.getCurrentPositionAsync({});
-    setLatitude(location.coords.latitude);
-    setLongitude(location.coords.longitude);
 
-    setError('');
+    if (!latitude || !longitude) {
+      setError("Location data required");
+      return
+    }
+
+    try {
+      const data = {
+        first: "Andi",
+        last: "Balo",
+        born: 2000,
+      };
+
+      if (image.uri) {
+        console.log("Uploading image to storage...");
+
+        console.log(`reading file: ${image.uri}`);
+        const ext = image.uri?.split(".").pop();
+        const file = await fetch(image.uri);
+        const fileBlob = await file.blob();
+
+        const imgRef = ref(storage, `test-app/newImage.${ext}`);
+
+        console.log("uploading file...");
+        const imgUrl = await uploadBytes(imgRef, fileBlob, { contentType: `image/${ext}` });
+        console.log("File uploaded to storage: " + imgUrl.ref.fullPath);
+
+        data.imageUrl = await getDownloadURL(imgUrl.ref);
+
+        console.log("Image uploaded to storage: " + data.imageUrl);
+      }
+
+
+      data.lat = latitude;
+      data.long = longitude;
+
+      const docRef = await addDoc(collection(firestoreDB, "photos"), data);
+
+      console.log("Document written with ID: ", docRef.id);
+
+      setError('');
+    } catch (err) {
+      console.error("Error adding document: ", err);
+      setError(err);
+    }
+  }
+
+  const getLocation = async () => {
+
+    try {
+      console.log("d")
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setError('Permission to access location was denied');
+        return;
+      }
+  
+      let location = await Location.getCurrentPositionAsync({
+        accuracy: 6,
+      });
+      setLatitude(location.coords.latitude);
+      setLongitude(location.coords.longitude);
+  
+      setError('');
+    } catch (error) {
+      console.log(error)
+      
+      setError(error);
+    }
+
   };
 
   const saveLocationToFile = async () => {
@@ -28,7 +114,7 @@ export default function App() {
       setError("Location data required");
       return
     }
-    
+
     const fileUri = FileSystem.documentDirectory + 'location_data.txt';
     const locationData = `Latitude: ${latitude}, Longitude: ${longitude}\n`;
 
@@ -44,17 +130,52 @@ export default function App() {
 
   };
 
+  const handleCameraLaunch = async () => {
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result.assets[0]);
+
+    if (!result.canceled) {
+      setImage(result.assets[0]);
+    }
+  };
+
+  const openImagePicker = async () => {
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result.assets[0]);
+
+    if (!result.canceled) {
+      setImage(result.assets[0]);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.name}>Andi Usman Balo - 00000037809</Text>
       <Button style={styles.getGeoLocationBtn} title="GET GEO LOCATION" onPress={getLocation} />
       <Button title="Save Location to File" onPress={saveLocationToFile} />
+      <Button title="Open Camera" onPress={handleCameraLaunch} />
+      <Button title="Open Gallery" onPress={openImagePicker} />
+      <Button title="Save to firebase" onPress={addData} />
       {latitude && longitude && (
         <View style={styles.coordinates}>
           <Text>Latitude: {latitude}</Text>
           <Text>Longitude: {longitude}</Text>
         </View>
       )}
+      {image && image.uri && <Image source={{ uri: image.uri }} width={200} height={200} />}
       {error && <Text style={styles.error}>{error}</Text>}
     </View>
   );
@@ -78,7 +199,10 @@ const styles = StyleSheet.create({
     color: 'red',
     marginTop: 20,
   },
-  getGeoLocationBtn :{
+  getGeoLocationBtn: {
     marginBottom: 10
-  }
+  },
+  camera: {
+    flex: 1,
+  },
 });
