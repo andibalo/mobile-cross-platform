@@ -8,8 +8,12 @@ import * as ImagePicker from 'expo-image-picker';
 import { useCameraPermissions } from 'expo-camera';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { addListenerOnNotification, registerForPushNotificationsAsync, sendPushNotification } from './notificationCfg';
+import { Provider } from 'react-redux';
+import { addFailed, addSuccess, store, useAppDispatch, useAppSelector } from './redux';
 
-export default function App() {
+function App() {
+  const dispatch = useAppDispatch();
+  const attemptCounter = useAppSelector(state => state.attemptCounter);
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [error, setError] = useState(null);
@@ -101,15 +105,16 @@ export default function App() {
 
       if(notificationToken && insertedData.exists()){
         console.log(`data: ${JSON.stringify(insertedData.data())}`);
-        sendPushNotification(notificationToken, insertedData.data());
+        sendPushNotification(notificationToken, `${attemptCounter.successAttempts} success attempts, ${attemptCounter.failedAttempts} failed attempts`);
       }
       else
         console.log("No notification token found, unable to send notification");
 
       console.log("Document written with ID: ", docRef.id);
-
+      dispatch(addSuccess());
       setError('');
     } catch (err) {
+      dispatch(addFailed());
       console.error("Error adding document: ", err);
       setError(err);
     }
@@ -209,6 +214,14 @@ export default function App() {
       {image && image.uri && <Image source={{ uri: image.uri }} width={200} height={200} />}
       {error && <Text style={styles.error}>{error}</Text>}
     </View>
+  );
+}
+
+export default function ReduxWrapper(){
+  return (
+    <Provider store={store}>
+      <App />
+    </Provider>
   );
 }
 
