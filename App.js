@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Button, Text, View, StyleSheet, Image } from 'react-native';
 import * as Location from 'expo-location';
 import * as FileSystem from 'expo-file-system';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, getDoc } from 'firebase/firestore';
 import { firestoreDB, storage } from './firebaseCfg';
 import * as ImagePicker from 'expo-image-picker';
 import { useCameraPermissions } from 'expo-camera';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { addListenerOnNotification, registerForPushNotificationsAsync, sendPushNotification } from './notificationCfg';
 
 export default function App() {
   const [latitude, setLatitude] = useState(null);
@@ -14,6 +15,23 @@ export default function App() {
   const [error, setError] = useState(null);
   const [image, setImage] = useState(null);
   const [permission, requestPermission] = useCameraPermissions();
+  const [notificationToken, setNotificationToken] = useState(null);
+
+  useEffect(() => {
+    async function notify(){
+      const token = await registerForPushNotificationsAsync();
+
+      if(token)
+        console.log("Notification token: " + token);
+      else
+        console.log("No notification token found");
+
+      setNotificationToken(token ?? null);
+    }
+
+    notify();
+  })
+
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -41,6 +59,11 @@ export default function App() {
       setError("Location data required");
       return
     }
+
+    addListenerOnNotification((unsubscribe) => {
+      console.log("Unsubscribing...");
+      unsubscribe();
+    });
 
     try {
       const data = {
@@ -73,6 +96,15 @@ export default function App() {
       data.long = longitude;
 
       const docRef = await addDoc(collection(firestoreDB, "photos"), data);
+      const insertedData = await getDoc(doc(firestoreDB, "users", docRef.id));
+
+
+      if(notificationToken && insertedData.exists()){
+        console.log(`data: ${JSON.stringify(insertedData.data())}`);
+        sendPushNotification(notificationToken, insertedData.data());
+      }
+      else
+        console.log("No notification token found, unable to send notification");
 
       console.log("Document written with ID: ", docRef.id);
 
